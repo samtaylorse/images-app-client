@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { FormGroup, FormControl, ControlLabel } from "react-bootstrap";
 import LoaderButton from "../components/LoaderButton";
 import { API } from "aws-amplify";
+import { s3Upload } from "../libs/awsLib";
 import config from "../config";
 import "./NewImage.css";
 
@@ -20,7 +21,7 @@ export default function NewImage(props) {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    
+  
     if (file.current && file.current.size > config.MAX_ATTACHMENT_SIZE) {
       alert(
         `Please pick a file smaller than ${config.MAX_ATTACHMENT_SIZE /
@@ -28,18 +29,22 @@ export default function NewImage(props) {
       );
       return;
     }
-
+  
     setIsLoading(true);
   
     try {
-      await createImage({ caption });
+      const attachment = file.current
+        ? await s3Upload(file.current)
+        : null;
+  
+      await createImage({ caption, attachment });
       props.history.push("/");
     } catch (e) {
       alert(e);
       setIsLoading(false);
     }
   }
-  
+
   function createImage(image) {
     return API.post("images", "/images", {
       body: image
