@@ -33,11 +33,11 @@ export default function NewImage(props) {
     setIsLoading(true);
   
     try {
-      const attachment = file.current
+      const imageUrl = file.current
         ? await s3Upload(file.current)
         : null;
-  
-      await createImage({ caption, attachment });
+      
+      await createImage({ caption, imageUrl });
       props.history.push("/");
     } catch (e) {
       alert(e);
